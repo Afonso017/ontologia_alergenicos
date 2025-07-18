@@ -1,0 +1,1024 @@
+@prefix : <http://websemantics/alergiaalimentar#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix gufo: <http://purl.org/nemo/gufo#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://websemantics/alergiaalimentar#> .
+
+<http://websemantics/alergiaalimentar> rdf:type owl:Ontology ;
+                                        owl:imports gufo: .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://websemantics/alergiaalimentar#composto_por
+:composto_por rdf:type owl:ObjectProperty ;
+              rdfs:domain :Alimento ;
+              rdfs:range :ComponenteAlimentar .
+
+
+###  http://websemantics/alergiaalimentar#contem
+:contem rdf:type owl:ObjectProperty ;
+        rdfs:subPropertyOf owl:topObjectProperty ;
+        rdf:type owl:TransitiveProperty ;
+        rdfs:domain :Alimento ;
+        rdfs:range :Alimento .
+
+
+###  http://websemantics/alergiaalimentar#profissional_responsavel
+:profissional_responsavel rdf:type owl:ObjectProperty ;
+                          rdfs:domain :Paciente ;
+                          rdfs:range :ProfissionalDeSaude .
+
+
+###  http://websemantics/alergiaalimentar#seguro_para
+:seguro_para rdf:type owl:ObjectProperty ;
+             rdfs:domain :Alimento ;
+             rdfs:range :Paciente ;
+             rdfs:label "seguro_para"@pt-br .
+
+
+###  http://websemantics/alergiaalimentar#tem_alergia_a
+:tem_alergia_a rdf:type owl:ObjectProperty ,
+                        owl:AsymmetricProperty ;
+               rdfs:domain :Paciente ;
+               rdfs:range :Alergeno .
+
+
+###  http://websemantics/alergiaalimentar#utiliza
+:utiliza rdf:type owl:ObjectProperty ;
+         rdfs:domain :ProfissionalDeSaude ;
+         rdfs:range :Procedimento .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://websemantics/alergiaalimentar#dataDiagnostico
+:dataDiagnostico rdf:type owl:DatatypeProperty ;
+                 rdfs:domain :Diagnostico ;
+                 rdfs:range xsd:date .
+
+
+###  http://websemantics/alergiaalimentar#idadePaciente
+:idadePaciente rdf:type owl:DatatypeProperty ;
+               rdfs:domain :Paciente ;
+               rdfs:range xsd:integer .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://websemantics/alergiaalimentar#AditivoAlimentar
+:AditivoAlimentar rdf:type owl:Class ;
+                  rdfs:subClassOf :ComponenteAlimentar .
+
+
+###  http://websemantics/alergiaalimentar#Adulto
+:Adulto rdf:type owl:Class ;
+        owl:equivalentClass [ owl:intersectionOf ( :Paciente
+                                                   [ rdf:type owl:Restriction ;
+                                                     owl:onProperty :idadePaciente ;
+                                                     owl:someValuesFrom [ rdf:type rdfs:Datatype ;
+                                                                          owl:onDatatype xsd:integer ;
+                                                                          owl:withRestrictions ( [ xsd:minInclusive 18
+                                                                                                 ]
+                                                                                               )
+                                                                        ]
+                                                   ]
+                                                 ) ;
+                              rdf:type owl:Class
+                            ] ;
+        owl:disjointWith :Crianca .
+
+
+###  http://websemantics/alergiaalimentar#Alergeno
+:Alergeno rdf:type owl:Class ;
+          rdfs:subClassOf :ComponenteAlimentar ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:mediates
+                                           ] ;
+                            owl:someValuesFrom :Alergia
+                          ] .
+
+
+###  http://websemantics/alergiaalimentar#AlergenoPotencialmenteGrave
+:AlergenoPotencialmenteGrave rdf:type owl:Class ;
+                             owl:equivalentClass [ owl:intersectionOf ( :Alergeno
+                                                                        [ rdf:type owl:Restriction ;
+                                                                          owl:onProperty [ owl:inverseOf gufo:mediates
+                                                                                         ] ;
+                                                                          owl:someValuesFrom [ owl:intersectionOf ( :Alergia
+                                                                                                                    [ rdf:type owl:Restriction ;
+                                                                                                                      owl:onProperty gufo:mediates ;
+                                                                                                                      owl:someValuesFrom [ owl:intersectionOf ( :Paciente
+                                                                                                                                                                [ rdf:type owl:Restriction ;
+                                                                                                                                                                  owl:onProperty [ owl:inverseOf gufo:inheresIn
+                                                                                                                                                                                 ] ;
+                                                                                                                                                                  owl:someValuesFrom :Sistemico
+                                                                                                                                                                ]
+                                                                                                                                                              ) ;
+                                                                                                                                           rdf:type owl:Class
+                                                                                                                                         ]
+                                                                                                                    ]
+                                                                                                                  ) ;
+                                                                                               rdf:type owl:Class
+                                                                                             ]
+                                                                        ]
+                                                                      ) ;
+                                                   rdf:type owl:Class
+                                                 ] ;
+                             rdfs:subClassOf :Alergeno .
+
+
+###  http://websemantics/alergiaalimentar#Alergia
+:Alergia rdf:type owl:Class ;
+         rdfs:subClassOf gufo:Relator ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty gufo:mediates ;
+                           owl:someValuesFrom :Alergeno
+                         ] ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty gufo:mediates ;
+                           owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                           owl:onClass :Paciente
+                         ] .
+
+
+###  http://websemantics/alergiaalimentar#Alimento
+:Alimento rdf:type owl:Class ;
+          rdfs:subClassOf gufo:FunctionalComplex ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty :composto_por ;
+                            owl:someValuesFrom :ComponenteAlimentar
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:mediates
+                                           ] ;
+                            owl:someValuesFrom :AvaliacaoDeRisco
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty :contem ;
+                            owl:allValuesFrom :Alimento
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty gufo:participatedIn ;
+                            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                            owl:onClass :ConsumoAlimentar
+                          ] .
+
+
+###  http://websemantics/alergiaalimentar#AvaliacaoDeRisco
+:AvaliacaoDeRisco rdf:type owl:Class ;
+                  rdfs:subClassOf gufo:Relator ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty gufo:mediates ;
+                                    owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :Alimento
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty gufo:mediates ;
+                                    owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :Paciente
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty gufo:mediates ;
+                                    owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :ProfissionalDeSaude
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty [ owl:inverseOf gufo:inheresIn
+                                                   ] ;
+                                    owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :NivelDeRisco
+                                  ] .
+
+
+###  http://websemantics/alergiaalimentar#Carboidrato
+:Carboidrato rdf:type owl:Class ;
+             rdfs:subClassOf :ComponenteAlimentar .
+
+
+###  http://websemantics/alergiaalimentar#ComobidardeAlergica
+:ComobidardeAlergica rdf:type owl:Class ;
+                     rdfs:subClassOf gufo:Quality ,
+                                     [ rdf:type owl:Restriction ;
+                                       owl:onProperty gufo:inheresIn ;
+                                       owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                       owl:onClass :Paciente
+                                     ] .
+
+
+###  http://websemantics/alergiaalimentar#ComponenteAlimentar
+:ComponenteAlimentar rdf:type owl:Class ;
+                     rdfs:subClassOf gufo:FunctionalComplex .
+
+
+###  http://websemantics/alergiaalimentar#ConsumoAlimentar
+:ConsumoAlimentar rdf:type owl:Class ;
+                  rdfs:subClassOf gufo:Event ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty [ owl:inverseOf gufo:participatedIn
+                                                   ] ;
+                                    owl:someValuesFrom :Alimento
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty gufo:broughtAbout ;
+                                    owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :ExposicaoAoAlergeno
+                                  ] ,
+                                  [ rdf:type owl:Restriction ;
+                                    owl:onProperty [ owl:inverseOf gufo:participatedIn
+                                                   ] ;
+                                    owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                    owl:onClass :Paciente
+                                  ] .
+
+
+###  http://websemantics/alergiaalimentar#Crianca
+:Crianca rdf:type owl:Class ;
+         owl:equivalentClass [ owl:intersectionOf ( :Paciente
+                                                    [ rdf:type owl:Restriction ;
+                                                      owl:onProperty :idadePaciente ;
+                                                      owl:someValuesFrom [ rdf:type rdfs:Datatype ;
+                                                                           owl:onDatatype xsd:integer ;
+                                                                           owl:withRestrictions ( [ xsd:maxExclusive 18
+                                                                                                  ]
+                                                                                                )
+                                                                         ]
+                                                    ]
+                                                  ) ;
+                               rdf:type owl:Class
+                             ] .
+
+
+###  http://websemantics/alergiaalimentar#Cutaneo
+:Cutaneo rdf:type owl:Class ;
+         rdfs:subClassOf :Sintoma .
+
+
+###  http://websemantics/alergiaalimentar#Diagnostico
+:Diagnostico rdf:type owl:Class ;
+             rdfs:subClassOf gufo:Relator ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty gufo:mediates ;
+                               owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onClass :Paciente
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty gufo:mediates ;
+                               owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onClass :Procedimento
+                             ] ,
+                             [ rdf:type owl:Restriction ;
+                               owl:onProperty gufo:mediates ;
+                               owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                               owl:onClass :ProfissionalDeSaude
+                             ] .
+
+
+###  http://websemantics/alergiaalimentar#DietaDeExclusao
+:DietaDeExclusao rdf:type owl:Class ;
+                 rdfs:subClassOf :Tratamento .
+
+
+###  http://websemantics/alergiaalimentar#DisposicaoAlergica
+:DisposicaoAlergica rdf:type owl:Class ;
+                    rdfs:subClassOf gufo:IntrinsicMode ,
+                                    [ rdf:type owl:Restriction ;
+                                      owl:onProperty gufo:inheresIn ;
+                                      owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                      owl:onClass :Paciente
+                                    ] .
+
+
+###  http://websemantics/alergiaalimentar#ExposicaoAoAlergeno
+:ExposicaoAoAlergeno rdf:type owl:Class ;
+                     rdfs:subClassOf gufo:Situation ,
+                                     [ rdf:type owl:Restriction ;
+                                       owl:onProperty [ owl:inverseOf gufo:broughtAbout
+                                                      ] ;
+                                       owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                       owl:onClass :ConsumoAlimentar
+                                     ] ,
+                                     [ rdf:type owl:Restriction ;
+                                       owl:onProperty gufo:contributedToTrigger ;
+                                       owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                       owl:onClass :ReacaoAdversa
+                                     ] .
+
+
+###  http://websemantics/alergiaalimentar#Formula
+:Formula rdf:type owl:Class ;
+         rdfs:subClassOf :Alimento ;
+         owl:disjointWith :Ingrediente .
+
+
+###  http://websemantics/alergiaalimentar#Gastrointestinal
+:Gastrointestinal rdf:type owl:Class ;
+                  rdfs:subClassOf :Sintoma .
+
+
+###  http://websemantics/alergiaalimentar#HerancaGenetica
+:HerancaGenetica rdf:type owl:Class ;
+                 rdfs:subClassOf gufo:Quality ,
+                                 [ rdf:type owl:Restriction ;
+                                   owl:onProperty gufo:inheresIn ;
+                                   owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                   owl:onClass :Paciente
+                                 ] .
+
+
+###  http://websemantics/alergiaalimentar#ImunoMediada
+:ImunoMediada rdf:type owl:Class ;
+              rdfs:subClassOf :Alergia .
+
+
+###  http://websemantics/alergiaalimentar#ImunoterapiaOral
+:ImunoterapiaOral rdf:type owl:Class ;
+                  rdfs:subClassOf :Tratamento .
+
+
+###  http://websemantics/alergiaalimentar#Ingrediente
+:Ingrediente rdf:type owl:Class ;
+             rdfs:subClassOf :Alimento .
+
+
+###  http://websemantics/alergiaalimentar#Medicamento
+:Medicamento rdf:type owl:Class ;
+             rdfs:subClassOf :Tratamento .
+
+
+###  http://websemantics/alergiaalimentar#Mista
+:Mista rdf:type owl:Class ;
+       rdfs:subClassOf :Alergia .
+
+
+###  http://websemantics/alergiaalimentar#NaoImunoMediada
+:NaoImunoMediada rdf:type owl:Class ;
+                 rdfs:subClassOf :Alergia .
+
+
+###  http://websemantics/alergiaalimentar#NivelDeRisco
+:NivelDeRisco rdf:type owl:Class ;
+              owl:equivalentClass [ rdf:type owl:Class ;
+                                    owl:oneOf ( :RiscoAlto
+                                                :RiscoBaixo
+                                                :RiscoMedio
+                                              )
+                                  ] ;
+              rdfs:subClassOf gufo:Quality ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty gufo:inheresIn ;
+                                owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                owl:onClass :AvaliacaoDeRisco
+                              ] .
+
+
+###  http://websemantics/alergiaalimentar#Paciente
+:Paciente rdf:type owl:Class ;
+          rdfs:subClassOf gufo:FunctionalComplex ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:mediates
+                                           ] ;
+                            owl:someValuesFrom :Alergia
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:mediates
+                                           ] ;
+                            owl:someValuesFrom :AvaliacaoDeRisco
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:mediates
+                                           ] ;
+                            owl:someValuesFrom :Diagnostico
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:mediates
+                                           ] ;
+                            owl:someValuesFrom :Tratamento
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:inheresIn
+                                           ] ;
+                            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                            owl:onClass :ComobidardeAlergica
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:inheresIn
+                                           ] ;
+                            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                            owl:onClass :DisposicaoAlergica
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:inheresIn
+                                           ] ;
+                            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                            owl:onClass :HerancaGenetica
+                          ] ,
+                          [ rdf:type owl:Restriction ;
+                            owl:onProperty [ owl:inverseOf gufo:inheresIn
+                                           ] ;
+                            owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                            owl:onClass :Sintoma
+                          ] .
+
+
+###  http://websemantics/alergiaalimentar#Procedimento
+:Procedimento rdf:type owl:Class ;
+              rdfs:subClassOf gufo:FunctionalComplex ,
+                              [ rdf:type owl:Restriction ;
+                                owl:onProperty [ owl:inverseOf gufo:mediates
+                                               ] ;
+                                owl:someValuesFrom :Diagnostico
+                              ] .
+
+
+###  http://websemantics/alergiaalimentar#ProfissionalDeSaude
+:ProfissionalDeSaude rdf:type owl:Class ;
+                     rdfs:subClassOf gufo:FunctionalComplex ,
+                                     [ rdf:type owl:Restriction ;
+                                       owl:onProperty [ owl:inverseOf gufo:mediates
+                                                      ] ;
+                                       owl:someValuesFrom :AvaliacaoDeRisco
+                                     ] ,
+                                     [ rdf:type owl:Restriction ;
+                                       owl:onProperty [ owl:inverseOf gufo:mediates
+                                                      ] ;
+                                       owl:someValuesFrom :Diagnostico
+                                     ] ,
+                                     [ rdf:type owl:Restriction ;
+                                       owl:onProperty [ owl:inverseOf gufo:mediates
+                                                      ] ;
+                                       owl:someValuesFrom :Tratamento
+                                     ] .
+
+
+###  http://websemantics/alergiaalimentar#Proteina
+:Proteina rdf:type owl:Class ;
+          rdfs:subClassOf :ComponenteAlimentar .
+
+
+###  http://websemantics/alergiaalimentar#ReacaoAdversa
+:ReacaoAdversa rdf:type owl:Class ;
+               rdfs:subClassOf gufo:Event ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty [ owl:inverseOf gufo:historicallyDependsOn
+                                                ] ;
+                                 owl:someValuesFrom :Sintoma
+                               ] ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty [ owl:inverseOf gufo:manifestedIn
+                                                ] ;
+                                 owl:someValuesFrom :DisposicaoAlergica
+                               ] ,
+                               [ rdf:type owl:Restriction ;
+                                 owl:onProperty [ owl:inverseOf gufo:contributedToTrigger
+                                                ] ;
+                                 owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                                 owl:onClass :ExposicaoAoAlergeno
+                               ] .
+
+
+###  http://websemantics/alergiaalimentar#ReacaoCruzada
+:ReacaoCruzada rdf:type owl:Class ;
+               rdfs:subClassOf :ReacaoAdversa .
+
+
+###  http://websemantics/alergiaalimentar#Respiratorio
+:Respiratorio rdf:type owl:Class ;
+              rdfs:subClassOf :Sintoma .
+
+
+###  http://websemantics/alergiaalimentar#Sintoma
+:Sintoma rdf:type owl:Class ;
+         rdfs:subClassOf gufo:IntrinsicMode ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty gufo:historicallyDependsOn ;
+                           owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                           owl:onClass :ReacaoAdversa
+                         ] ,
+                         [ rdf:type owl:Restriction ;
+                           owl:onProperty gufo:inheresIn ;
+                           owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                           owl:onClass :Paciente
+                         ] .
+
+
+###  http://websemantics/alergiaalimentar#Sistemico
+:Sistemico rdf:type owl:Class ;
+           rdfs:subClassOf :Sintoma .
+
+
+###  http://websemantics/alergiaalimentar#TesteCutaneo
+:TesteCutaneo rdf:type owl:Class ;
+              rdfs:subClassOf :Procedimento .
+
+
+###  http://websemantics/alergiaalimentar#TesteDeDosagemIgESerica
+:TesteDeDosagemIgESerica rdf:type owl:Class ;
+                         rdfs:subClassOf :Procedimento .
+
+
+###  http://websemantics/alergiaalimentar#TesteDeProvocacaoOral
+:TesteDeProvocacaoOral rdf:type owl:Class ;
+                       rdfs:subClassOf :Procedimento .
+
+
+###  http://websemantics/alergiaalimentar#Tratamento
+:Tratamento rdf:type owl:Class ;
+            rdfs:subClassOf gufo:Relator ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty gufo:mediates ;
+                              owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                              owl:onClass :Paciente
+                            ] ,
+                            [ rdf:type owl:Restriction ;
+                              owl:onProperty gufo:mediates ;
+                              owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ;
+                              owl:onClass :ProfissionalDeSaude
+                            ] .
+
+
+#################################################################
+#    Individuals
+#################################################################
+
+###  http://websemantics/alergiaalimentar#AditivoAlimentar
+:AditivoAlimentar rdf:type owl:NamedIndividual ,
+                           gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#Adulto
+:Adulto rdf:type owl:NamedIndividual ,
+                 gufo:Phase .
+
+
+###  http://websemantics/alergiaalimentar#Albumina
+:Albumina rdf:type owl:NamedIndividual ,
+                   :Alergeno ,
+                   :Proteina .
+
+
+###  http://websemantics/alergiaalimentar#Alergeno
+:Alergeno rdf:type owl:NamedIndividual ,
+                   gufo:Role .
+
+
+###  http://websemantics/alergiaalimentar#Alergia
+:Alergia rdf:type owl:NamedIndividual ,
+                  gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#AlergiaAoLeiteDaMaria
+:AlergiaAoLeiteDaMaria rdf:type owl:NamedIndividual ,
+                                :Alergia ;
+                       gufo:mediates :Caseina ,
+                                     :Maria .
+
+
+###  http://websemantics/alergiaalimentar#Alimento
+:Alimento rdf:type owl:NamedIndividual ,
+                   gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#AvaliacaoDeRisco
+:AvaliacaoDeRisco rdf:type owl:NamedIndividual ,
+                           gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#Carboidrato
+:Carboidrato rdf:type owl:NamedIndividual ,
+                      gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#Carlos
+:Carlos rdf:type owl:NamedIndividual ,
+                 :Paciente ;
+        :idadePaciente 25 .
+
+
+###  http://websemantics/alergiaalimentar#Caseina
+:Caseina rdf:type owl:NamedIndividual ,
+                  :Alergeno ,
+                  :Proteina .
+
+
+###  http://websemantics/alergiaalimentar#ComobidardeAlergica
+:ComobidardeAlergica rdf:type owl:NamedIndividual ,
+                              gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#ComponenteAlimentar
+:ComponenteAlimentar rdf:type owl:NamedIndividual ,
+                              gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#ConsumoAlimentar
+:ConsumoAlimentar rdf:type owl:NamedIndividual ,
+                           gufo:EventType .
+
+
+###  http://websemantics/alergiaalimentar#Crianca
+:Crianca rdf:type owl:NamedIndividual ,
+                  gufo:Phase .
+
+
+###  http://websemantics/alergiaalimentar#Cuscuz
+:Cuscuz rdf:type owl:NamedIndividual ,
+                 :Alimento .
+
+
+###  http://websemantics/alergiaalimentar#CuscuzComOvo
+:CuscuzComOvo rdf:type owl:NamedIndividual ,
+                       :Alimento ;
+              :composto_por :Cuscuz ,
+                            :Ovo .
+
+
+###  http://websemantics/alergiaalimentar#Cutaneo
+:Cutaneo rdf:type owl:NamedIndividual ,
+                  gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#Diagnostico
+:Diagnostico rdf:type owl:NamedIndividual ,
+                      gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#DietaDeExclusao
+:DietaDeExclusao rdf:type owl:NamedIndividual ,
+                          gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#DisposicaoAlergica
+:DisposicaoAlergica rdf:type owl:NamedIndividual ,
+                             gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#EdemaLaringeo
+:EdemaLaringeo rdf:type owl:NamedIndividual ,
+                        :Sistemico ;
+               gufo:inheresIn :Maria .
+
+
+###  http://websemantics/alergiaalimentar#ExposicaoAoAlergeno
+:ExposicaoAoAlergeno rdf:type owl:NamedIndividual ,
+                              gufo:SituationType .
+
+
+###  http://websemantics/alergiaalimentar#Formula
+:Formula rdf:type owl:NamedIndividual ,
+                  gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#Gastrointestinal
+:Gastrointestinal rdf:type owl:NamedIndividual ,
+                           gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#HerancaGenetica
+:HerancaGenetica rdf:type owl:NamedIndividual ,
+                          gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#ImunoMediada
+:ImunoMediada rdf:type owl:NamedIndividual ,
+                       gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#ImunoterapiaOral
+:ImunoterapiaOral rdf:type owl:NamedIndividual ,
+                           gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#Ingrediente
+:Ingrediente rdf:type owl:NamedIndividual ,
+                      gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#Joao
+:Joao rdf:type owl:NamedIndividual ,
+               :Paciente ;
+      :idadePaciente 12 .
+
+
+###  http://websemantics/alergiaalimentar#Lactose
+:Lactose rdf:type owl:NamedIndividual ,
+                  :Carboidrato .
+
+
+###  http://websemantics/alergiaalimentar#Leite
+:Leite rdf:type owl:NamedIndividual ,
+                :Alimento ;
+       :composto_por :Caseina ,
+                     :Lactose ,
+                     :ProteinaDoLeite .
+
+
+###  http://websemantics/alergiaalimentar#Maria
+:Maria rdf:type owl:NamedIndividual ,
+                :Paciente ;
+       :idadePaciente 20 .
+
+
+###  http://websemantics/alergiaalimentar#Medicamento
+:Medicamento rdf:type owl:NamedIndividual ,
+                      gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#Mista
+:Mista rdf:type owl:NamedIndividual ,
+                gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#NaoImunoMediada
+:NaoImunoMediada rdf:type owl:NamedIndividual ,
+                          gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#Nata
+:Nata rdf:type owl:NamedIndividual .
+
+
+###  http://websemantics/alergiaalimentar#NivelDeRisco
+:NivelDeRisco rdf:type owl:NamedIndividual ,
+                       gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#Ovo
+:Ovo rdf:type owl:NamedIndividual ,
+              :Alimento ;
+     :composto_por :Albumina .
+
+
+###  http://websemantics/alergiaalimentar#Paciente
+:Paciente rdf:type owl:NamedIndividual ,
+                   gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#Procedimento
+:Procedimento rdf:type owl:NamedIndividual ,
+                       gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#ProfissionalDeSaude
+:ProfissionalDeSaude rdf:type owl:NamedIndividual ,
+                              gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#Proteina
+:Proteina rdf:type owl:NamedIndividual ,
+                   gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#ProteinaDoLeite
+:ProteinaDoLeite rdf:type owl:NamedIndividual ,
+                          :Proteina .
+
+
+###  http://websemantics/alergiaalimentar#ReacaoAdversa
+:ReacaoAdversa rdf:type owl:NamedIndividual ,
+                        gufo:EventType .
+
+
+###  http://websemantics/alergiaalimentar#ReacaoCruzada
+:ReacaoCruzada rdf:type owl:NamedIndividual ,
+                        gufo:EventType .
+
+
+###  http://websemantics/alergiaalimentar#Respiratorio
+:Respiratorio rdf:type owl:NamedIndividual ,
+                       gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#RiscoAlto
+:RiscoAlto rdf:type owl:NamedIndividual .
+
+
+###  http://websemantics/alergiaalimentar#RiscoBaixo
+:RiscoBaixo rdf:type owl:NamedIndividual .
+
+
+###  http://websemantics/alergiaalimentar#RiscoMedio
+:RiscoMedio rdf:type owl:NamedIndividual .
+
+
+###  http://websemantics/alergiaalimentar#Sintoma
+:Sintoma rdf:type owl:NamedIndividual ,
+                  gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#Sistemico
+:Sistemico rdf:type owl:NamedIndividual ,
+                    gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#TesteCutaneo
+:TesteCutaneo rdf:type owl:NamedIndividual ,
+                       gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#TesteDeDosagemIgESerica
+:TesteDeDosagemIgESerica rdf:type owl:NamedIndividual ,
+                                  gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#TesteDeProvocacaoOral
+:TesteDeProvocacaoOral rdf:type owl:NamedIndividual ,
+                                gufo:SubKind .
+
+
+###  http://websemantics/alergiaalimentar#Tratamento
+:Tratamento rdf:type owl:NamedIndividual ,
+                     gufo:Kind .
+
+
+###  http://websemantics/alergiaalimentar#profissional_responsavel
+:profissional_responsavel rdf:type owl:NamedIndividual ,
+                                   gufo:MaterialRelationshipType .
+
+
+###  http://websemantics/alergiaalimentar#tem_alergia_a
+:tem_alergia_a rdf:type owl:NamedIndividual ,
+                        gufo:MaterialRelationshipType .
+
+
+###  http://websemantics/alergiaalimentar#utiliza
+:utiliza rdf:type owl:NamedIndividual ,
+                  gufo:MaterialRelationshipType .
+
+
+#################################################################
+#    Annotations
+#################################################################
+
+:AditivoAlimentar rdfs:label "Aditivo Alimentar"@pt-br .
+
+
+:Adulto rdfs:label "Adulto"@pt-br .
+
+
+:Alergeno rdfs:label "Alergeno"@pt-br .
+
+
+:Alergia rdfs:label "Alergia"@pt-br .
+
+
+:Alimento rdfs:label "Alimento"@pt-br .
+
+
+:AvaliacaoDeRisco rdfs:label "Avaliacao de Risco"@pt-br .
+
+
+:Carboidrato rdfs:label "Carboidrato"@pt-br .
+
+
+:ComobidardeAlergica rdfs:label "Comobidarde Alergica"@pt-br .
+
+
+:ComponenteAlimentar rdfs:label "Componente Alimentar"@pt-br .
+
+
+:ConsumoAlimentar rdfs:label "Consumo Alimentar"@pt-br .
+
+
+:Crianca rdfs:label "Crianca"@pt-br .
+
+
+:Cutaneo rdfs:label "Cutaneo"@pt-br .
+
+
+:Diagnostico rdfs:label "Diagnostico"@pt-br .
+
+
+:DietaDeExclusao rdfs:label "Dieta de Exclusao"@pt-br .
+
+
+:DisposicaoAlergica rdfs:label "Disposicao Alergica"@pt-br .
+
+
+:ExposicaoAoAlergeno rdfs:label "Exposicao ao Alergeno"@pt-br .
+
+
+:Formula rdfs:label "Formula"@pt-br .
+
+
+:Gastrointestinal rdfs:label "Gastrointestinal"@pt-br .
+
+
+:HerancaGenetica rdfs:label "Heranca Genetica"@pt-br .
+
+
+:ImunoMediada rdfs:label "Imuno Mediada"@pt-br .
+
+
+:ImunoterapiaOral rdfs:label "Imunoterapia Oral"@pt-br .
+
+
+:Ingrediente rdfs:label "Ingrediente"@pt-br .
+
+
+:Medicamento rdfs:label "Medicamento"@pt-br .
+
+
+:Mista rdfs:label "Mista"@pt-br .
+
+
+:NaoImunoMediada rdfs:label "Nao Imuno Mediada"@pt-br .
+
+
+:NivelDeRisco rdfs:label "Nivel de Risco"@pt-br .
+
+
+:Paciente rdfs:label "Paciente"@pt-br .
+
+
+:Procedimento rdfs:label "Procedimento"@pt-br .
+
+
+:ProfissionalDeSaude rdfs:label "Profissional de Saude"@pt-br .
+
+
+:Proteina rdfs:label "Proteina"@pt-br .
+
+
+:ReacaoAdversa rdfs:label "Reacao Adversa"@pt-br .
+
+
+:ReacaoCruzada rdfs:label "Reacao Cruzada"@pt-br .
+
+
+:Respiratorio rdfs:label "Respiratorio"@pt-br .
+
+
+:Sintoma rdfs:label "Sintoma"@pt-br .
+
+
+:Sistemico rdfs:label "Sistemico"@pt-br .
+
+
+:TesteCutaneo rdfs:label "Teste Cutaneo"@pt-br .
+
+
+:TesteDeDosagemIgESerica rdfs:label "Teste de Dosagem IgE Serica"@pt-br .
+
+
+:TesteDeProvocacaoOral rdfs:label "Teste de Provocacao Oral"@pt-br .
+
+
+:Tratamento rdfs:label "Tratamento"@pt-br .
+
+
+:profissional_responsavel rdfs:label "profissional_responsavel"@pt-br .
+
+
+:tem_alergia_a rdfs:label "tem_alergia_a"@pt-br .
+
+
+:utiliza rdfs:label "utiliza"@pt-br .
+
+
+#################################################################
+#    General axioms
+#################################################################
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Cutaneo
+                :Gastrointestinal
+                :Respiratorio
+                :Sistemico
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :DietaDeExclusao
+                :ImunoterapiaOral
+                :Medicamento
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :ImunoMediada
+                :Mista
+                :NaoImunoMediada
+              )
+] .
+
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :TesteCutaneo
+                :TesteDeDosagemIgESerica
+                :TesteDeProvocacaoOral
+              )
+] .
+
+
+###  Generated by the OWL API (version 4.5.29.2024-05-13T12:11:03Z) https://github.com/owlcs/owlapi
